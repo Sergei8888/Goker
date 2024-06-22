@@ -1,17 +1,12 @@
 name: "auth-gocker"
 
 services:
-  backend:
-    container_name: backend
-    build:
-      dockerfile: Dockerfile
-    volumes:
-      - .:/app
-
   # PostgresSQL database
   pg:
     container_name: pg
     image: postgres:16-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${PG_DB_NAME}
       POSTGRES_USER: ${PG_USER}

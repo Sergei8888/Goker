@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"auth-goker/internal/db"
+	"github.com/joho/godotenv"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
-	for {
-	}
+	_ = godotenv.Load(".env.dev")
+
+	_ = db.MustInitDb()
 }
