@@ -2,11 +2,27 @@ package main
 
 import (
 	"auth-goker/internal/db"
+	"auth-goker/internal/http"
+	"auth-goker/internal/repository"
+	"auth-goker/internal/service"
 	"github.com/joho/godotenv"
+	"log"
+	"sync"
 )
 
 func main() {
 	_ = godotenv.Load(".env.dev")
 
-	_ = db.MustInitDb()
+	dbInstance := db.MustInitDb()
+	userRepo := repository.UserRepo{DB: dbInstance}
+	authService := service.AuthService{Ur: userRepo}
+	authController := http.AuthController{As: authService}
+
+	go http.RunServer(authController)
+	log.Printf("Server successfully running")
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	wg.Wait()
 }

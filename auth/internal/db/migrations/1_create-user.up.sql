@@ -1,5 +1,7 @@
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(60) NOT NULL -- bcrypt hash is 60 characters long
 );
 
 CREATE TABLE sessions
