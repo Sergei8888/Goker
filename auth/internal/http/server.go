@@ -13,6 +13,14 @@ func RunServer(authController AuthController) {
 		authController.HandleSignup(w, r)
 	})
 
+	mux.HandleFunc("POST /auth/signin", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		authController.HandleSignin(w, r)
+	})
+
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		return

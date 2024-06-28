@@ -15,7 +15,8 @@ func main() {
 
 	dbInstance := db.MustInitDb()
 	userRepo := repository.UserRepo{DB: dbInstance}
-	authService := service.AuthService{Ur: userRepo}
+	sessionRepo := repository.SessionRepo{DB: dbInstance}
+	authService := service.AuthService{Ur: userRepo, Sr: sessionRepo}
 	authController := http.AuthController{As: authService}
 
 	go http.RunServer(authController)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type signupDto struct {
+type authDto struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
@@ -16,7 +16,7 @@ type AuthController struct {
 }
 
 func (c AuthController) HandleSignup(w http.ResponseWriter, r *http.Request) {
-	var signup signupDto
+	var signup authDto
 
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
@@ -44,6 +44,29 @@ func (c AuthController) HandleSignup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (c AuthController) HandleSignin(w http.ResponseWriter, r *http.Request) {}
+func (c AuthController) HandleSignin(w http.ResponseWriter, r *http.Request) {
+	var signin authDto
+
+	err := json.NewDecoder(r.Body).Decode(&signin)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = validate.Struct(signin)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	session, err := c.As.Signin(signin.Email, signin.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Set-Cookie", "goker-session="+session.Token)
+	w.WriteHeader(http.StatusOK)
+}
 
 func (c AuthController) HandleSessionValidation(w http.ResponseWriter, r *http.Request) {}

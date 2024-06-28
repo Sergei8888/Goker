@@ -25,3 +25,15 @@ func (r UserRepo) CreateUser(login string, password string) (service.User, error
 
 	return service.User{Id: user.Id, Login: user.Login, Password: user.Password}, nil
 }
+
+func (r UserRepo) GetUserByLogin(login string) (service.User, error) {
+	var user UserEntity
+
+	err := r.DB.QueryRowx("SELECT * FROM users WHERE login = $1", login).StructScan(&user)
+	if err != nil {
+		return service.User{}, err
+	}
+
+	return service.User{Id: user.Id, Login: user.Login, Password: user.Password}, nil
+
+}

@@ -38,7 +38,7 @@ func mustLoadDbConfig() dbConfig {
 		panic("PG_PASSWORD env variable not set")
 	}
 
-	dbname, found := os.LookupEnv("PG_DBNAME")
+	dbname, found := os.LookupEnv("PG_DB_NAME")
 	if found == false {
 		panic("PG_DBNAME env variable not set")
 	}
