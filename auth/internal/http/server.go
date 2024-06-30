@@ -1,6 +1,9 @@
 package http
 
-import "net/http"
+import (
+	"auth-goker/internal/http/middleware"
+	"net/http"
+)
 
 func RunServer(authController AuthController) {
 	mux := http.NewServeMux()
@@ -20,6 +23,14 @@ func RunServer(authController AuthController) {
 		}
 		authController.HandleSignin(w, r)
 	})
+
+	mux.Handle("GET /auth/me", middleware.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		authController.HandleMe(w, r)
+	}), authController.As))
 
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {

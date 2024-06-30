@@ -23,7 +23,7 @@ func (r UserRepo) CreateUser(login string, password string) (service.User, error
 		return service.User{}, err
 	}
 
-	return service.User{Id: user.Id, Login: user.Login, Password: user.Password}, nil
+	return r.userEntityToUser(user), nil
 }
 
 func (r UserRepo) GetUserByLogin(login string) (service.User, error) {
@@ -34,6 +34,21 @@ func (r UserRepo) GetUserByLogin(login string) (service.User, error) {
 		return service.User{}, err
 	}
 
-	return service.User{Id: user.Id, Login: user.Login, Password: user.Password}, nil
+	return r.userEntityToUser(user), nil
 
+}
+
+func (r UserRepo) GetUserById(id int64) (service.User, error) {
+	var user UserEntity
+
+	err := r.DB.QueryRowx("SELECT * FROM users WHERE id = $1", id).StructScan(&user)
+	if err != nil {
+		return service.User{}, err
+	}
+
+	return r.userEntityToUser(user), nil
+}
+
+func (r UserRepo) userEntityToUser(entity UserEntity) service.User {
+	return service.User{Id: entity.Id, Login: entity.Login, Password: entity.Password}
 }

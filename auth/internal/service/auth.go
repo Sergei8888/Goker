@@ -17,6 +17,7 @@ type User struct {
 
 type Session struct {
 	Token     string
+	UserId    int64
 	CreatedAt time.Time
 	ExpiresAt time.Time
 }
@@ -24,11 +25,12 @@ type Session struct {
 type UserRepo interface {
 	CreateUser(login string, password string) (User, error)
 	GetUserByLogin(login string) (User, error)
+	GetUserById(id int64) (User, error)
 }
 
 type SessionRepo interface {
 	CreateSession(userId int64, token string) (Session, error)
-	GetSessionsByUser(userId int64) ([]Session, error)
+	GetSession(token string) (Session, error)
 	UpdateSession(session Session) (Session, error)
 }
 
@@ -78,4 +80,43 @@ func (r AuthService) generateToken(login string) string {
 	fmt.Println("Hash to store:", string(hash))
 
 	return base64.StdEncoding.EncodeToString(hash)
+}
+
+func (r AuthService) ValidateSession(token string) (bool, error) {
+	session, err := r.Sr.GetSession(token)
+	if err != nil {
+		return false, err
+	}
+
+	if session.ExpiresAt.Before(time.Now()) {
+		return false, nil
+	}
+
+	session.ExpiresAt = time.Now().Add(time.Hour * 24)
+
+	_, err = r.Sr.UpdateSession(session)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+type UserInfoDto struct {
+	Id    int64  `json:"id"`
+	Login string `json:"login"`
+}
+
+func (r AuthService) GetInfoAboutUserBySessionToken(token string) (UserInfoDto, error) {
+	session, err := r.Sr.GetSession(token)
+	if err != nil {
+		return UserInfoDto{}, err
+	}
+
+	user, err := r.Ur.GetUserById(session.UserId)
+	if err != nil {
+		return UserInfoDto{}, err
+	}
+
+	return UserInfoDto{Id: user.Id, Login: user.Login}, err
 }

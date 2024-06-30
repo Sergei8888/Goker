@@ -65,8 +65,27 @@ func (c AuthController) HandleSignin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Set-Cookie", "goker-session="+session.Token)
+	http.SetCookie(w, &http.Cookie{
+		Name:   "goker_session",
+		Value:  session.Token,
+		MaxAge: 60 * 60 * 24 * 7,
+		Path:   "/",
+	})
 	w.WriteHeader(http.StatusOK)
 }
 
-func (c AuthController) HandleSessionValidation(w http.ResponseWriter, r *http.Request) {}
+func (c AuthController) HandleMe(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("goker_session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	user, err := c.As.GetInfoAboutUserBySessionToken(cookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(user)
+}
